@@ -1,0 +1,25 @@
+{
+  "name": "statsPUBG",
+  "version": "1.0.0",
+  "description": "WebExtension to retrieve your PUBG statistics",
+  "main": "index.js",
+  "repository": "https://github.com/Silbad/statsPUBG",
+  "author": "Silbad",
+  "license": "MPL-2.0",
+  "scripts": {
+    "demo": "web-ext run"
+  },
+  "dependencies": {
+    "bootstrap": "^4.1.1",
+    "font-awesome": "^4.7.0",
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^4.0.1",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.3",
+    "syncy": "^2.2.2",
+    "web-ext": "^2.6.0"
+  }
+}

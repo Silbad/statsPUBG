@@ -1,0 +1,10 @@
+{
+    "statsPUBGName": {
+        "message": "statsPUBG",
+        "description": "Nom de l'extension"
+    },
+    "statsPUBGDescription": {
+        "message": "WebExtension to retrieve your PUBG statistics",
+        "description": "Description de l'extension"
+	}
+}
