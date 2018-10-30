@@ -1,5 +1,9 @@
+html, body {
+    background-color: $pubg-blue;
+}
+
 .loading {
-    background-color: rgba($pubg-brown, 0.5);
+    background-color: rgba($pubg-blue, 0.5);
     color: white;
     z-index: 99999;
     width: 100%;
@@ -38,4 +42,17 @@ h1 {
     button {
         margin: -2px 0 0 10px;
     }
+}
+
+.pubg-container {
+    background: $pubg-grey url('./../img/background.png') no-repeat center top;
+    background-size: contain;
+}
+
+.bg-pubg {
+    color: $white;
+}
+
+.table {
+    background-color: rgba($white, .7);
 }
