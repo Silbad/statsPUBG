@@ -1,6 +1,6 @@
 {
   "name": "statsPUBG",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "WebExtension to retrieve your PUBG statistics",
   "main": "index.js",
   "repository": "https://github.com/Silbad/statsPUBG",
