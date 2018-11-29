@@ -30,9 +30,11 @@ function loadError(error) {
 // mettre à jour la liste des saisons
 function updateListSeasons(tmpPubgServer) {
     $('.loading').show();
+
     $.ajax({
         method: 'GET',
-        url: 'https://api.playbattlegrounds.com/shards/' + tmpPubgServer + '/seasons',
+        url: 'https://api.pubg.com/shards/' + tmpPubgServer + '/seasons',
+        async: false,
         headers: {
             Accept: 'application/vnd.api+json'
         },
@@ -47,9 +49,6 @@ function updateListSeasons(tmpPubgServer) {
                 listSessions += '<option value="' + value.id + '">' + value.id.replace('division.bro.official.', '') + '</option>';
             });
             $('#pubg-season').empty().append(listSessions);
-            // sauvegarder la saison par défaut
-            var tmpPubgSeason = $('#pubg-season').val();
-            browser.storage.local.set({ pubgSeason: tmpPubgSeason });
             // sauvegarder la date de mise à jour
             var tmpSaisonUpdate = new Date();
             browser.storage.local.set({ pubgSaisonUpdate: tmpSaisonUpdate });
@@ -68,39 +67,35 @@ function initStatsPUBG() {
     var manifest = chrome.runtime.getManifest();
     $('.version').html(manifest.version);
 
-    // récupérer les données
-    browser.storage.local.get(['pubgName', 'pubgServer', 'pubgSaisonUpdate', 'pubgListSeasons', 'pubgSeason', 'pubgMode']).then(function(item) {
-
+    browser.storage.local.get(['pubgServer', 'pubgListSeasons', 'pubgSaisonUpdate']).then(function(server) {
         // récupérer l'ID du serveur
         var tmpPubgServer = $('#pubg-server').val();
-        if (item.pubgServer != null) {
-            tmpPubgServer = item.pubgServer
+        if (server.pubgServer != null) {
+            tmpPubgServer = server.pubgServer
+        } else {
+            browser.storage.local.set({ pubgServer: tmpPubgServer });
         }
-        browser.storage.local.set({ pubgServer: tmpPubgServer });
 
-        // mettre à jour la liste des saisons une fois par mois
-        if (item.pubgListSeasons != null) {
-            // vérifier la cohérence d'une mise à jour de la liste des saisons
-            var tmpPubgServerUpdate = item.pubgSaisonUpdate;
-            if (tmpPubgServerUpdate == null) {
-                tmpPubgServerUpdate = new Date();
-            }
+        // mettre à jour la liste des saisons
+        if (server.pubgListSeasons != null) {
+            // mettre à jour maximum une fois par mois
             var tmpNow = new Date();
-            var tmpDay = tmpNow.getDate();
-            var timeDiff = Math.abs(tmpNow.getTime() - tmpPubgServerUpdate.getTime());
-            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            var tmpNowMonth = tmpNow.getMonth();
+            var tmpNowYear = tmpNow.getYear();
 
-            // si la date est comprise entre le 1 et le 5
-            if ((tmpDay > 0) && (tmpDay < 6) && (diffDays > 5)) {
+            var pubgSaisonUpdate = server.pubgSaisonUpdate;
+            var pubgSaisonUpdateMonth = pubgSaisonUpdate.getMonth();
+            var pubgSaisonUpdateYear = pubgSaisonUpdate.getYear();
+
+            if (tmpNowYear > pubgSaisonUpdateYear) {
                 updateListSeasons(tmpPubgServer);
             } else {
-                // si mise à jour vieille de plus de 28 jours, on met à jour
-                if (diffDays > 15) {
+                if (tmpNowMonth > pubgSaisonUpdateMonth) {
                     updateListSeasons(tmpPubgServer);
-                // si liste à jour on la charge normalement
                 } else {
-                    var listSessions = item.pubgListSeasons;
-                    $.each(listSessions.data.reverse(), function(key, value) {
+                    var listSessions = '';
+                    var pubgListSeasons = server.pubgListSeasons;
+                    $.each(pubgListSeasons.data.reverse(), function(key, value) {
                         listSessions += '<option value="' + value.id + '">' + value.id.replace('division.bro.official.', '') + '</option>';
                     });
                     $('#pubg-season').empty().append(listSessions);
@@ -110,61 +105,65 @@ function initStatsPUBG() {
             updateListSeasons(tmpPubgServer);
         }
 
-        // récupérer les données stockées, sinon prendre celles par défaut et les stocker
-        if (item.pubgName != undefined) {
-            $('#pubg-name').val(item.pubgName);
-            $('#pubg-server').val(item.pubgServer);
-            $('#pubg-season').val(item.pubgSeason);
-            $('#pubg-mode').val(item.pubgMode);
+        // récupérer les données
+        browser.storage.local.get(['pubgName', 'pubgServer', 'pubgSeason', 'pubgMode']).then(function(item) {
 
-            // mettre à jour les données
-            updateStatsPUBG();
-        } else {
-            var tmpPubgName = $('#pubg-name').val();
-            browser.storage.local.set({ pubgName: tmpPubgName });
-            var tmpPubgServer = $('#pubg-server').val();
-            browser.storage.local.set({ pubgServer: tmpPubgServer });
-            var tmpPubgSeason = $('#pubg-season').val();
-            browser.storage.local.set({ pubgSeason: tmpPubgSeason });
-            var tmpPubgMode = $('#pubg-mode').val();
-            browser.storage.local.set({ pubgMode: tmpPubgMode });
-        }
+            // récupérer les données stockées, sinon prendre celles par défaut et les stocker
+            if (item.pubgName != undefined) {
+                $('#pubg-name').val(item.pubgName);
+                $('#pubg-server').val(item.pubgServer);
+                $('#pubg-season').val(item.pubgSeason);
+                $('#pubg-mode').val(item.pubgMode);
 
-        // EVENTS -----------------------------------------------------------------------------------
+                // mettre à jour les données
+                updateStatsPUBG();
+            } else {
+                var tmpPubgName = $('#pubg-name').val();
+                browser.storage.local.set({ pubgName: tmpPubgName });
+                var tmpPubgServer = $('#pubg-server').val();
+                browser.storage.local.set({ pubgServer: tmpPubgServer });
+                var tmpPubgSeason = $('#pubg-season').val();
+                browser.storage.local.set({ pubgSeason: tmpPubgSeason });
+                var tmpPubgMode = $('#pubg-mode').val();
+                browser.storage.local.set({ pubgMode: tmpPubgMode });
+            }
 
-        // sur bouton refresh
-        $('.btn-refresh').on('click', function(e) {
-            // mettre à jour les données
-            updateStatsPUBG();
-        });
+            // EVENTS -----------------------------------------------------------------------------------
 
-        // sur modification nom
-        $('#pubg-name').on('blur change', function(e) {
-            var tmpPubgName = $(this).val();
-            browser.storage.local.set({ pubgName: tmpPubgName });
-            updateStatsPUBG();
-        });
+            // sur bouton refresh
+            $('.btn-refresh').on('click', function(e) {
+                // mettre à jour les données
+                updateStatsPUBG();
+            });
 
-        // sur modification server
-        $('#pubg-server').on('change', function(e) {
-            var tmpPubgServer = $(this).val();
-            browser.storage.local.set({ pubgServer: tmpPubgServer });
-            updateListSeasons(tmpPubgServer);
-            updateStatsPUBG();
-        });
+            // sur modification nom
+            $('#pubg-name').on('blur change', function(e) {
+                var tmpPubgName = $(this).val();
+                browser.storage.local.set({ pubgName: tmpPubgName });
+                updateStatsPUBG();
+            });
 
-        // sur modification saison
-        $('#pubg-season').on('change', function(e) {
-            var tmpPubgSeason = $(this).val();
-            browser.storage.local.set({ pubgSeason: tmpPubgSeason });
-            updateStatsPUBG();
-        });
+            // sur modification server
+            $('#pubg-server').on('change', function(e) {
+                var tmpPubgServer = $(this).val();
+                browser.storage.local.set({ pubgServer: tmpPubgServer });
+                updateListSeasons(tmpPubgServer);
+                updateStatsPUBG();
+            });
 
-        // sur modification mode
-        $('#pubg-mode').on('change', function(e) {
-            var tmpPubgMode = $(this).val();
-            browser.storage.local.set({ pubgMode: tmpPubgMode });
-            updateStatsPUBG();
+            // sur modification saison
+            $('#pubg-season').on('change', function(e) {
+                var tmpPubgSeason = $(this).val();
+                browser.storage.local.set({ pubgSeason: tmpPubgSeason });
+                updateStatsPUBG();
+            });
+
+            // sur modification mode
+            $('#pubg-mode').on('change', function(e) {
+                var tmpPubgMode = $(this).val();
+                browser.storage.local.set({ pubgMode: tmpPubgMode });
+                updateStatsPUBG();
+            });
         });
     });
 }
@@ -182,13 +181,15 @@ function updateStatsPUBG() {
     var tmpPubgMode = $('#pubg-mode').val();
     if (tmpPubgMode == null) {tmpPubgMode = ''};
 
+    // alert(tmpPubgName + ' et ' + tmpPubgServer + ' et ' + tmpPubgSeason + ' et ' + tmpPubgMode);
+
     // tester si le nom est saisi
     if((tmpPubgName.trim() != '') && (tmpPubgServer.trim() != '') && (tmpPubgSeason.trim() != '') && (tmpPubgMode.trim() != '')) {
 
         $.ajax({
             method: 'GET',
             async: false,
-            url: 'https://api.playbattlegrounds.com/shards/' + tmpPubgServer + '/players?filter[playerNames]=' + tmpPubgName,
+            url: 'https://api.pubg.com/shards/' + tmpPubgServer + '/players?filter[playerNames]=' + tmpPubgName,
             headers: {
                 Accept: 'application/vnd.api+json'
             },
@@ -201,7 +202,7 @@ function updateStatsPUBG() {
                 $.ajax({
                     method: 'GET',
                     async: false,
-                    url: 'https://api.playbattlegrounds.com/shards/' + tmpPubgServer + '/players/' + tmpPubgId + '/seasons/' + tmpPubgSeason,
+                    url: 'https://api.pubg.com/shards/' + tmpPubgServer + '/players/' + tmpPubgId + '/seasons/' + tmpPubgSeason,
                     headers: {
                         Accept: 'application/vnd.api+json'
                     },

@@ -2,7 +2,7 @@
 {
 	"manifest_version": 2,
 	"name": "__MSG_statsPUBGName__",
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"description": "__MSG_statsPUBGDescription__",
 	"homepage_url": "https://github.com/Silbad/statsPUBG",
 	"default_locale": "en",

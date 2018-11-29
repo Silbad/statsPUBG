@@ -2,7 +2,7 @@
 WebExtension to retrieve your PUBG statistics.
 
 ## Screenshot
-![statsPUBG](./screenshots/statspubg_1.1.0.png)
+![statsPUBG](./screenshots/statspubg_1.2.0.png)
 
 ## Firefox Add-ons
 [https://addons.mozilla.org/fr/firefox/addon/statsPUBG/](https://addons.mozilla.org/fr/firefox/addon/statsPUBG/)
