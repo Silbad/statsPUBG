@@ -1,11 +1,6 @@
 'use strict';
 var apiKey = config.API_KEY;
 
-// init statsPUBG
-$(function() {
-    initStatsPUBG();
-});
-
 // charger une erreur
 function loadError(error) {
     $('.dataPUBG').text('n/a');
@@ -68,6 +63,7 @@ function initStatsPUBG() {
     $('.version').html(manifest.version);
 
     browser.storage.local.get(['pubgServer', 'pubgListSeasons', 'pubgSaisonUpdate']).then(function(server) {
+
         // récupérer l'ID du serveur
         var tmpPubgServer = $('#pubg-server').val();
         if (server.pubgServer != null) {
@@ -77,19 +73,22 @@ function initStatsPUBG() {
         }
 
         // mettre à jour la liste des saisons
-        if (server.pubgListSeasons != null) {
+        if ((server.pubgListSeasons != null) && (server.pubgSaisonUpdate != null)) {
             // mettre à jour maximum une fois par mois
             var tmpNow = new Date();
             var tmpNowMonth = tmpNow.getMonth();
             var tmpNowYear = tmpNow.getYear();
 
             var pubgSaisonUpdate = server.pubgSaisonUpdate;
+            pubgSaisonUpdate = new Date(pubgSaisonUpdate);
+
             var pubgSaisonUpdateMonth = pubgSaisonUpdate.getMonth();
             var pubgSaisonUpdateYear = pubgSaisonUpdate.getYear();
 
             if (tmpNowYear > pubgSaisonUpdateYear) {
                 updateListSeasons(tmpPubgServer);
             } else {
+
                 if (tmpNowMonth > pubgSaisonUpdateMonth) {
                     updateListSeasons(tmpPubgServer);
                 } else {
@@ -210,6 +209,7 @@ function updateStatsPUBG() {
                         auth.setRequestHeader('Authorization', 'Bearer ' + apiKey);
                     },
                     success: function(result, statut, xhr) {
+
                         var isData = false;
                         $.each(result.data.attributes.gameModeStats, function(key, value) {
                             if (key == tmpPubgMode) {
@@ -277,3 +277,8 @@ function updateStatsPUBG() {
         loadError();
     }
 }
+
+// init statsPUBG
+$(function() {
+    initStatsPUBG();
+});
